@@ -1,3 +1,5 @@
+'use strict';
+
 Object.defineProperty(exports, "__esModule", { value: true });
 /**
  * The entrypoint for the action. This file simply imports and runs the action's
