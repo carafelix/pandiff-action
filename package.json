@@ -39,6 +39,7 @@
   "dependencies": {
     "@actions/core": "^1.11.1",
     "@actions/github": "^6.0.0",
+    "@rollup/plugin-json": "^6.1.0",
     "pandiff": "^0.7.0"
   },
   "devDependencies": {
