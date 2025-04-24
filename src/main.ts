@@ -42,16 +42,8 @@ export async function run(): Promise<void> {
           baseBranch +
           '/' +
           file.filename
-        const baseRawText = await new Promise<string>(async (resolve) => {
-          try {
-            resolve(await (await fetch(urlBase)).text())
-          } catch (error) {
-            core.error(`File ${file.filename} does not exist in ${baseBranch}`)
-            // try previous filename
-            // if that doesn't work, resolve to default ''
-            resolve('')
-          }
-        })
+        // TODO- add previous filename check
+        const baseRawText = await (await fetch(urlBase)).text()
         const diff = pandiff(baseRawText, prRawText, { to: 'html' })
         pandiffedFiles.push({ file: file.filename, diff })
       } catch (error) {
