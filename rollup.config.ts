@@ -11,7 +11,8 @@ const config = {
     esModule: false,
     file: 'dist/index.js',
     format: 'es',
-    sourcemap: true
+    sourcemap: true,
+    commonjs: true
   },
   plugins: [
     typescript(),
