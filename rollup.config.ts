@@ -8,9 +8,9 @@ import json from '@rollup/plugin-json'
 const config = {
   input: 'src/index.ts',
   output: {
-    esModule: true,
+    // esModule: true,
     file: 'dist/index.js',
-    format: 'es',
+    format: 'cjs',
     sourcemap: true
   },
   plugins: [
