@@ -8,10 +8,9 @@ import json from '@rollup/plugin-json'
 const config = {
   input: 'src/index.ts',
   output: {
-    esModule: false,
+    esModule: true,
     file: 'dist/index.js',
-    format: 'cjs',
-    commonjs: true,
+    format: 'es',
     sourcemap: true
   },
   plugins: [
@@ -19,7 +18,8 @@ const config = {
     json(),
     nodeResolve({ preferBuiltins: true }),
     commonjs()
-  ]
+  ],
+  external: ['jsdom']
 }
 
 export default config
