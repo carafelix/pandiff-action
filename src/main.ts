@@ -1,5 +1,6 @@
 import * as core from '@actions/core'
-import { wait } from './wait.js'
+import github from '@actions/github'
+import pandiff from 'pandiff'
 
 /**
  * The main function for the action.
@@ -8,18 +9,42 @@ import { wait } from './wait.js'
  */
 export async function run(): Promise<void> {
   try {
-    const ms: string = core.getInput('milliseconds')
+    
+    const token = core.getInput('repo-token')
+    const octokit = github.getOctokit(token)
+    const context = github.context
 
-    // Debug logs are only output if the `ACTIONS_STEP_DEBUG` secret is true
-    core.debug(`Waiting ${ms} milliseconds ...`)
+    if (!context.payload.pull_request) {
+      core.setFailed('This action only runs on pull_request events.')
+      return
+    }
 
-    // Log the current timestamp, wait, then log the new timestamp
-    core.debug(new Date().toTimeString())
-    await wait(parseInt(ms, 10))
-    core.debug(new Date().toTimeString())
+    const { owner, repo } = context.repo;
+    const pull_number = context.payload.pull_request.number;
+    const baseBranch = context.payload.pull_request.base.ref;
 
-    // Set outputs for other workflow steps to use
-    core.setOutput('time', new Date().toTimeString())
+    core.info(`🔍 Fetching changed files for PR #${pull_number} against ${baseBranch}`);
+
+    const prFiles = await octokit.paginate(
+      octokit.rest.pulls.listFiles,
+      { owner, repo, pull_number, per_page: 100 },
+      (response) => response.data
+    );
+
+    const pandiffedFiles = []
+
+    for(const file of prFiles){
+      try {
+        const prRawText = await (await fetch(file.raw_url)).text()
+        const urlBase = file.raw_url.split('/raw/')[0] + '/raw/' + baseBranch + '/' + file.filename
+        const baseRawText = await(await fetch(urlBase)).text()
+        const diff = pandiff(baseRawText, prRawText, {to:'html'})
+        pandiffedFiles.push({file: file.filename, diff})
+      } catch (error) {
+        core.error(`File ${file.filename} fail. Skipped. Error: ${error}`)
+      }
+    }
+    core.setOutput('diffs', pandiffedFiles)    
   } catch (error) {
     // Fail the workflow run if an error occurs
     if (error instanceof Error) core.setFailed(error.message)
